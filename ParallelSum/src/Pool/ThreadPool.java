@@ -6,6 +6,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import Mult.DoReducer;
+import Mult.MultReducer;
+import Mult.MapMatrix;
 import Sum.SumReducer;
 
 public class ThreadPool {
@@ -33,6 +35,10 @@ public class ThreadPool {
 
     public Future<List<Integer>> submitTask(DoReducer doReducer) {
         return pool.submit(doReducer);
+    }
+
+    public Future<MapMatrix> submitTask(MultReducer mapReducer) {
+        return pool.submit(mapReducer);
     }
 
     public static void poolShutdown() {

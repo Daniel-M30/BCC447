@@ -16,6 +16,9 @@ public class SumTask {
 
     private static Integer sum(List<Integer> list) {
         Integer sum = 0;
+        if(list == null)
+            return sum;
+
         for(Integer i : list)
             sum += i;
 

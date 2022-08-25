@@ -1,41 +1,23 @@
 package Mult;
+import java.util.concurrent.Callable;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+public class MultReducer implements Callable<MapMatrix> {
+    private int row;
+    private int col;
+    private int pos;
+    private Integer number1;
+    private Integer number2;
 
-import Pool.ThreadPool;
-
-public class MultReducer {
-    // private List<List<Integer>> auxList;
-    private ThreadPool threadPool;
-
-    public MultReducer() {
-        // auxList = new LinkedList<List<Integer>>();
-        threadPool = ThreadPool.getInstance();
+    public MultReducer(Integer number1, Integer number2, int row, int col, int pos) {
+        this.number1 = number1;
+        this.number2 = number2;
+        this.row = row;
+        this.col = col;
+        this.pos = pos;
     }
 
-    public List<List<Integer>> parallelMatrix(int n, int m) {
-        List<List<Integer>> auxList = new LinkedList<List<Integer>>();
-
-        List<Future<List<Integer>>> results = new LinkedList<Future<List<Integer>>>();
-        Future<List<Integer>> result = null;
-
-        for(int i = 0; i < n; i++) {
-            result = threadPool.submitTask(new DoReducer(m));      
-            results.add(result);
-        }
-        
-        try {
-            for(Future<List<Integer>> r: results)
-                auxList.add(r.get());
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        results.clear();
-
-        return auxList;
+    @Override
+    public MapMatrix call() throws Exception {
+        return MultTask.doSomething(number1, number2, row, col, pos);
     }
 }

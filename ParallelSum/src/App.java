@@ -2,9 +2,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import Mult.MultReducer;
+import Mult.Mult;
 import Pool.ThreadPool;
-import Sum.Reducer;
+import Sum.Sum;
 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -23,17 +23,23 @@ public class App {
             input.add(number);
         }
 
-        Reducer reducer = new Reducer();
+        Sum sum = new Sum();
 
-        reducer.splitData(input);
-        reducer.parallelReduce();
+        sum.splitData(input);
+        Integer result = sum.parallelReduce();
+
+        System.out.println(result);
+        System.out.println("Finish!!");
     }
 
     private static void multProblem() {
-        MultReducer multReducer = new MultReducer();
+        Mult mult = new Mult(200, 200);
 
-        List<List<Integer>> input1 = multReducer.parallelMatrix(1000, 1000);
-        List<List<Integer>> input2 = multReducer.parallelMatrix(1000, 1000);
+        List<List<Integer>> input1 = mult.parallelMatrix();
+        List<List<Integer>> input2 = mult.parallelMatrix();
+
+        mult.setLists(input1, input2);
+        mult.parallelReduce();
 
         System.out.println("Finish!!");
     }

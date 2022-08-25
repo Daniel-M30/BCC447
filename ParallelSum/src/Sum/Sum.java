@@ -6,14 +6,14 @@ import java.util.concurrent.Future;
 
 import Pool.ThreadPool;
 
-public class Reducer {
+public class Sum {
     private List<List<Integer>> listNumbers, auxList; 
 	private int nThreads;
     private int partitions;
     
     private ThreadPool threadPool;
 
-    public Reducer() {
+    public Sum() {
         nThreads = Runtime.getRuntime().availableProcessors();
         partitions = nThreads * 2;
 
@@ -25,20 +25,24 @@ public class Reducer {
 
     public void splitData(List<Integer> data) {
         int sizeData = data.size();
+        if(sizeData < partitions) {
+            partitions = sizeData;
+        }
+
         int splitSize = sizeData / partitions;
         int count = 0;
-
+        
         for(int i = 0; i < partitions; i++) {
             listNumbers.add(data.subList(splitSize * i, splitSize * (i + 1)));
             count += splitSize;
         }
-
+        
         if(count < sizeData) {
             listNumbers.add(data.subList(count, sizeData));
         }
     }
 
-    public void parallelReduce() {
+    public Integer parallelReduce() {
         while(listNumbers.size() > 1 || auxList.size() > 1) {
             List<Future<List<Integer>>> results = new LinkedList<Future<List<Integer>>>();
             Future<List<Integer>> result = null;
@@ -50,7 +54,7 @@ public class Reducer {
                     if(result != null) {
                         results.add(result);
                     }
-                } while(result != null);
+                } while(!listNumbers.isEmpty());
 
                 try {
                     for(Future<List<Integer>> r: results)
@@ -67,7 +71,7 @@ public class Reducer {
                     if(result != null) {
                         results.add(result);
                     }
-                } while(result != null);
+                } while(!auxList.isEmpty());
 
                 try {
                     for(Future<List<Integer>> r: results)
@@ -80,18 +84,34 @@ public class Reducer {
             results.clear();
         }
 		
-		if(!listNumbers.isEmpty())
-			System.out.println(listNumbers.get(0));
-		else System.out.println(auxList.get(0));
+        Integer resultInteger;
+		if(!listNumbers.isEmpty()) {
+            List<Integer> finalList = listNumbers.get(0);
+            resultInteger = finalList.get(0);
+        }
+
+		else {
+            List<Integer> finalList = auxList.get(0);
+            resultInteger = finalList.get(0);
+        }
 		
 		listNumbers.clear();
 		auxList.clear();
+
+        return resultInteger;
     }
 
     private Future<List<Integer>> listSplit() {
         try {
-            List<Integer> args1 = listNumbers.remove(0);
-            List<Integer> args2 = listNumbers.remove(0);
+            List<Integer> args1 = null;
+            List<Integer> args2 = null;
+            if(!listNumbers.isEmpty()) {
+                args1 = listNumbers.remove(0);
+            }
+
+            if(!listNumbers.isEmpty()) {
+                args2 = listNumbers.remove(0);
+            }
     
             return threadPool.submitTask(new SumReducer(args1, args2));
         } catch(Exception e) {
@@ -101,8 +121,15 @@ public class Reducer {
 
     private Future<List<Integer>> auxSplit() {
         try {
-            List<Integer> args1 = auxList.remove(0);
-            List<Integer> args2 = auxList.remove(0);
+            List<Integer> args1 = null;
+            List<Integer> args2 = null;
+            if(!auxList.isEmpty()) {
+                args1 = auxList.remove(0);
+            }
+
+            if(!auxList.isEmpty()) {
+                args2 = auxList.remove(0);
+            }
     
             return threadPool.submitTask(new SumReducer(args1, args2));
         } catch(Exception e) {
